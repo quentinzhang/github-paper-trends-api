@@ -44,7 +44,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 python app.py
 ```
 
-现在，API服务将在 http://localhost:5000 上运行。
+现在，API服务将在 http://localhost:8080 上运行。
 
 ## API端点
 
@@ -142,7 +142,7 @@ GET /api/newsletter/download
 docker build -t github-paper-trends-api .
 
 # 运行容器
-docker run -p 5000:5000 -e OPENAI_API_KEY="your-openai-api-key" github-paper-trends-api
+docker run -p 8080:8080 -e OPENAI_API_KEY="your-openai-api-key" github-paper-trends-api
 ```
 
 ### 部署到云服务
