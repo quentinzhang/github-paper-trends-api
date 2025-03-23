@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Paper Trends</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .header {
+            background-color: #24292e;
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .paper-card {
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .paper-card:hover {
+            transform: translateY(-5px);
+        }
+        .paper-meta {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .summary {
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #343a40;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            background-color: #f1f3f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1><i class="bi bi-github"></i> GitHub Paper Trends</h1>
+            <p class="lead">Discover trending academic papers on GitHub with AI-generated summaries</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h2 class="h4 mb-3">Today's Academic Paper Newsletter</h2>
+                        <p>Get the latest trending academic papers on GitHub with automatic summaries</p>
+                        <a href="/api/newsletter/download" class="btn btn-primary">
+                            <i class="bi bi-download"></i> Download Newsletter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="h4 mb-0">Trending Academic Papers</h2>
+                        <div class="filters">
+                            <select id="timeFilter" class="form-select form-select-sm">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="papers-container" class="row"></div>
+                        <div id="loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading trending papers...</p>
+                        </div>
+                        <div id="no-papers" class="text-center py-5" style="display: none;">
+                            <p class="text-muted">No academic papers found in trending repositories.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">API Endpoints</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <strong>GET /api/trending-papers</strong>
+                                <p class="mb-0 small">Get trending academic papers from GitHub</p>
+                                <div class="small text-muted">Optional parameters: language, since (daily, weekly, monthly)</div>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>GET /api/summarize-paper</strong>
+                                <p class="mb-0 small">Generate AI summary for a GitHub repository</p>
+                                <div class="small text-muted">Required parameter: repo_url</div>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>GET /api/newsletter</strong>
+                                <p class="mb-0 small">Get today's newsletter in JSON format</p>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>GET /api/newsletter/download</strong>
+                                <p class="mb-0 small">Download today's newsletter as Markdown file</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">About GitHub Paper Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>GitHub Paper Trends is an API and web service that identifies trending academic papers on GitHub and generates AI-powered summaries.</p>
+                        <p>Features:</p>
+                        <ul>
+                            <li>Daily tracking of trending academic repositories</li>
+                            <li>AI-generated summaries of research papers</li>
+                            <li>Daily newsletter with latest trending papers</li>
+                            <li>REST API for integration with other services</li>
+                        </ul>
+                        <p><a href="https://github.com/quentinzhang/github-paper-trends-api" target="_blank">View the source code on GitHub</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>© 2025 GitHub Paper Trends API | <a href="https://github.com/quentinzhang/github-paper-trends-api" target="_blank">GitHub</a></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const papersContainer = document.getElementById('papers-container');
+            const loadingElement = document.getElementById('loading');
+            const noResultsElement = document.getElementById('no-papers');
+            const timeFilter = document.getElementById('timeFilter');
+            
+            // Function to fetch trending papers
+            async function fetchTrendingPapers(since = 'daily') {
+                // Show loading indicator
+                loadingElement.style.display = 'block';
+                papersContainer.innerHTML = '';
+                noResultsElement.style.display = 'none';
+                
+                try {
+                    const response = await fetch(`/api/trending-papers?since=${since}`);
+                    if (!response.ok) throw new Error('Failed to fetch papers');
+                    
+                    const data = await response.json();
+                    
+                    // Hide loading indicator
+                    loadingElement.style.display = 'none';
+                    
+                    if (data.papers && data.papers.length > 0) {
+                        // Display papers
+                        data.papers.forEach(paper => {
+                            papersContainer.innerHTML += generatePaperCard(paper);
+                        });
+                    } else {
+                        // Show no results message
+                        noResultsElement.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error fetching papers:', error);
+                    loadingElement.style.display = 'none';
+                    noResultsElement.style.display = 'block';
+                    noResultsElement.innerHTML = `<p class="text-danger">Error loading papers: ${error.message}</p>`;
+                }
+            }
+            
+            // Function to generate HTML for a paper card
+            function generatePaperCard(paper) {
+                return `
+                    <div class="col-md-6 mb-4">
+                        <div class="card paper-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="${paper.avatar || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'}" 
+                                         alt="${paper.author}" class="rounded-circle me-2" width="40" height="40">
+                                    <div>
+                                        <h3 class="h5 mb-0">${paper.name}</h3>
+                                        <div class="paper-meta">by ${paper.author}</div>
+                                    </div>
+                                </div>
+                                <p>${paper.description || 'No description available'}</p>
+                                <div class="d-flex align-items-center paper-meta mb-3">
+                                    ${paper.language ? `<span class="me-3"><span class="badge bg-secondary">${paper.language}</span></span>` : ''}
+                                    <span class="me-3"><i class="bi bi-star-fill text-warning"></i> ${paper.stars}</span>
+                                    <span><i class="bi bi-diagram-2"></i> ${paper.forks}</span>
+                                </div>
+                                <a href="${paper.url}" target="_blank" class="btn btn-sm btn-outline-primary mb-3">View Repository</a>
+                                
+                                <hr>
+                                
+                                <div class="d-grid">
+                                    <button class="btn btn-sm btn-outline-secondary get-summary" data-repo-url="${paper.url}">
+                                        Generate Summary
+                                    </button>
+                                </div>
+                                <div class="summary-container mt-3" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Handle time filter change
+            timeFilter.addEventListener('change', function() {
+                fetchTrendingPapers(this.value);
+            });
+            
+            // Handle summary generation
+            document.addEventListener('click', async function(e) {
+                if (e.target.classList.contains('get-summary') || e.target.closest('.get-summary')) {
+                    const button = e.target.classList.contains('get-summary') ? e.target : e.target.closest('.get-summary');
+                    const repoUrl = button.getAttribute('data-repo-url');
+                    const summaryContainer = button.closest('.card-body').querySelector('.summary-container');
+                    
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+                    button.disabled = true;
+                    
+                    try {
+                        const response = await fetch(`/api/summarize-paper?repo_url=${encodeURIComponent(repoUrl)}`);
+                        if (!response.ok) throw new Error('Failed to generate summary');
+                        
+                        const data = await response.json();
+                        
+                        summaryContainer.innerHTML = `
+                            <div class="alert alert-light summary">
+                                <h4 class="alert-heading h6">AI Summary</h4>
+                                <p>${data.summary || 'No summary available'}</p>
+                            </div>
+                        `;
+                        summaryContainer.style.display = 'block';
+                    } catch (error) {
+                        console.error('Error generating summary:', error);
+                        summaryContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                <p>Error generating summary: ${error.message}</p>
+                            </div>
+                        `;
+                        summaryContainer.style.display = 'block';
+                    } finally {
+                        button.innerHTML = 'Generate Summary';
+                        button.disabled = false;
+                    }
+                }
+            });
+            
+            // Initial load
+            fetchTrendingPapers();
+        });
+    </script>
+</body>
+</html>
