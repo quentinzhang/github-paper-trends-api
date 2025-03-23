@@ -137,5 +137,7 @@ def refresh_data():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    # Default port is now 8080 instead of 5000
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port, debug=True)
+    print(f"Server running on port {port}...")
