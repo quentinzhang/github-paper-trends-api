@@ -1,0 +1,38 @@
+name: Daily Paper Newsletter
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Run daily at 8:00 AM UTC
+  workflow_dispatch:    # Allow manual trigger
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate newsletter
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python3 -c "from api import GitHubPaperTrends; paper_trends = GitHubPaperTrends(); paper_trends.run_daily_update()"
+
+      - name: Commit and push newsletter
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          date_str=$(date +"%Y-%m-%d")
+          git add "newsletter-${date_str}.md"
+          git commit -m "Add newsletter for ${date_str}" || echo "No changes to commit"
+          git push
